@@ -1,0 +1,23 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.4.0'
+}
+
+group 'com.wooftown'
+version ''
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+    implementation "args4j:args4j:2.33"
+    implementation "junit:junit:4.12"
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'sat.wooftown.MainKt'
+    }
+    from configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+}
