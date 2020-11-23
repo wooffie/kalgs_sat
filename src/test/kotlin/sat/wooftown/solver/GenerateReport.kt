@@ -66,7 +66,6 @@ class ReportGenerator {
 
 
     fun deleteReports(){
-        TODO()
     }
 
 
