@@ -21,7 +21,7 @@ class ReportGenerator {
 
     fun main(){
 
-        val data = Date().toString().split(" ").drop(1).dropLast(2).joinToString("_").replace(":","-")
+        val data = Date().toString().split(" ").subList(1,4).joinToString("_").replace(":","-")
         val outputStream = File("report_${data}.txt").bufferedWriter()
 
         val filesForTest = File("src\\test\\resources").walkTopDown().drop(1)
