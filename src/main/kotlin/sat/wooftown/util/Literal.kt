@@ -1,49 +1,46 @@
 package sat.wooftown.util
 
 
-/*
-Когда смотрел реализации солверов увидел очень интересный способ хранения переменных
-Создаётся список (кол-во переменных * 2), и для положительных - индекс четный, для отрицательных - нечётный
-Это удобно при дальнейшей работе со списками, вместо созданий Map будет создавать Array
- */
-
 /**
- * Литерал хранящий переменную и особый индекс, который если четен - переменная положительна
+ * Container which stores variable and sign
+ * Value show us "shifted" index
+ * If value is  even - variable is positive
+ * If value is odd - variable is negative
  * @param value - значение переменной
  */
 class Literal(
     val value: Int,
 ) {
 
-    // Если инициализовать сразу, то всё уйдёт в рекурсию и получим StackOverflow
-    // Исключающее ИЛИ тут смотрится супер круто
-    // Так как для инвесии надо изменить только последний разряд двоичного числа, то xor с 1 позволит это сделать
-    // так бы через if и % надо бы париться
     /**
-     * Получить инвертированный литерал
+     * Get inverted literal
      */
     val inversion: Literal
-        get() = Literal(value xor 1)
+        get() = Literal(value xor 1) // Not init cause of StackOverflow
 
-    // получить инт переменной
+    /**
+     * Get index of variable
+     */
     val index = value / 2
 
-    // получить переменную
+    /**
+     * Get variable
+     */
     val variable = Variable(index)
 
-    // есть знак отрицания или нету
+    /**
+     * Returns sign
+     */
     val isPositive = value and 1 == 0
 
     override fun equals(other: Any?): Boolean = other is Literal && value == other.value
 
-    // вроде сеты буду использовать пусть будет =)
     override fun hashCode() = value
 
-    // для того чтобы не париться каждый раз в дебаггере выставляя там human-readable формат
     override fun toString() = if (isPositive)
-        "+${index+1} (index: $value)"
+        "+${index + 1} (index: $value)"
     else
-        "-${index+1} (index: $value)"
+        "-${index + 1} (index: $value)"
 
 
 }

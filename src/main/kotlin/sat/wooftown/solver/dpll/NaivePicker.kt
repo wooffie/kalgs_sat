@@ -5,47 +5,59 @@ import sat.wooftown.solver.Picker
 import sat.wooftown.util.*
 import java.util.*
 
-// TODO() вынести commonclause
+/**
+ * Picker for DPLL algorithm
+ * @param formula - input
+ * @param size - number of variables
+ */
 class NaivePicker(
     formula: Formula,
     private val size: Int,
 ) : Picker {
 
     /*
-    Стак по котрому мы будем идти при поиске решения
-    Идти будем так 1 -1 2 -2 ...... n -n
-    попутно смотря конфликты и если надо возращаться назад
-    !!Это будет работать как двоичное дерево!!
-    если представить что левый лист это минус а правый плюс, то мы сначала идём по всем левым листам,
-    а если есть конфликт, то возращаемся и идём по правому
     https://sun9-33.userapi.com/XT6Tk5CLdiD-hHcvmIexNwofQpcCsjOaTynbIw/tlrCkXCnD8Q.jpg
     */
+    /**
+     * *Tree* which display which literal we take next
+     */
     private val checkQueue = LinkedList<Literal>()
 
-    // Список наборов переменных в которые входит данный литерал!!! (не переменная)
-    // Зачем это нужно будет описано в фунции решателя
-    // @see com.wooftown.solver.dpll.NaivePicker.hasConflict
+    /**
+     * Common clauses
+     * @see com.wooftown.solver.dpll.NaivePicker.hasConflict
+     */
     private val commonClauses = CommonClauses(formula,size)
-    // Важное отличие, тут мы можем не хранить нашу formula, нам это не нужно
 
-    // получить множество наборов из массива выше
+
+    /**
+     * Returns common clauses
+     */
     fun getCommonClause(literal: Literal): MutableSet<Clause> {
         return commonClauses[literal]
     }
 
-    // Сюда будем записывать решение
+    /**
+     * Array for Solution
+     */
     private val solutions = BooleanArray(size)
 
-    // Записываем решение + переходим к следующей переменной
+    /**
+     * Write down solved literal
+     * @param literal - which literal
+     * @param isPositive - sign
+     */
     operator fun set(literal: Literal, isPositive: Boolean) {
         solutions[literal.variable.index] = isPositive
         currentIndex = literal.index + 1
     }
 
-    // просто достаём решение из приватного поля
+    /**
+     * Get value of solution
+     * @param literal - literal for his value
+     */
     operator fun get(literal: Literal) = solutions[literal.index]
 
-    // Получить решение, если оно есть
     override fun getSolution(): Model {
         val result = mutableSetOf<Literal>()
         for (literal in solutions.indices) {
@@ -60,28 +72,37 @@ class NaivePicker(
 
 
     init {
-        // добавляем первые листы от *рута* дерева
         checkQueue.add(Literal(0))
         checkQueue.add(Literal(1))
     }
 
-    // указатель где сейчас мы находимся
+    /**
+     * Pointer of picker
+     */
     private var currentIndex = 0
 
-    // вернутся к листу дереву и начать идти оттуда
+    /**
+     * Back to literal, if we have conflict
+     */
     fun backtrack(literal: Literal) {
         currentIndex = literal.index
     }
 
-    // проходили ли мы по этой перменной
+    /**
+     * Check index
+     */
     fun notChecked(literal: Literal): Boolean {
         return literal.index >= currentIndex
     }
 
-    // прошли ли мы достаточно чтобы выдать ответ
+    /**
+     * True if we have right solution
+     */
     fun haveSolution() = size <= currentIndex
 
-    // взять некст лист, если нету, то получается что мы прошли всё дерево и решение не найдено
+    /**
+     * Pick next literal
+     */
     fun getNextLiteral(): Literal? =
         if (checkQueue.isEmpty()) {
             null
@@ -89,7 +110,9 @@ class NaivePicker(
             checkQueue.removeLast()
         }
 
-    // Если у нас не было конфликтов, то идём дальше по дереву
+    /**
+     * Add literals in queue
+     */
     fun prepareNextLiterals() {
         checkQueue.add(Literal(currentIndex * 2))
         checkQueue.add(Literal(currentIndex * 2 + 1))

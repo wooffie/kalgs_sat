@@ -4,19 +4,33 @@ import sat.wooftown.solver.CommonClauses
 import sat.wooftown.solver.Picker
 import sat.wooftown.util.*
 
-
+/**
+ * Picker for CDCLSolver
+ */
 class CDCLPicker(
     formula: Formula,
     private val size: Int,
 ) : Picker {
 
+    /**
+     * Common clauses for formula
+     */
     private val commonClauses = CommonClauses(formula, size)
-    // Список который показывает откуда следует назначение данного литера, null если было выбрано на рандом,
-    // и показывает clause если по правилу чистых переменных
+
+    /**
+     * Parent clauses - clauses from which followed the exception by the rule of pure variable
+     */
     private val parentClauses: MutableList<Clause?> = MutableList(size * 2) { null }
-    // не сдалал мапу, потому что будем обрашаться по индексам
+
+    /**
+     * Solution list
+     */
     private val solutions: MutableList<Literal?> = MutableList(size * 2) { null }
-    // переделать ответ в map
+
+    /**
+     * Get mapping of solution
+     * @return map of solution
+     */
     private fun valuesToMapVariable(): Map<Variable, Boolean> {
         val assignments = mutableMapOf<Variable, Boolean>()
         for (it in 0 until pickedCount) {
@@ -25,28 +39,44 @@ class CDCLPicker(
         return assignments
     }
 
-
+    /**
+     * Get solution in Model type
+     * @return model
+     */
     override fun getSolution(): Model {
         return Model(solutions.filterNotNull().toSet())
     }
 
-    // уровни решения
+    /**
+     * Decision level , in more details see in net "implication graph"
+     */
     private val decisionLevels = MutableList(size * 2) { -1 }
 
-    // текущий уровень мышления
+    /**
+     * Current decision level
+     */
     private var currentLevel = -1
 
-    // слудующий индекс по которому мы будем брать переменную
+    /**
+     * Next variable for picking
+     */
     private var nextIndex = 0
 
-    // сколько бы заасигнено
+    /**
+     * How many variable has been assigned
+     */
     private var pickedCount = 0
 
-    // итерируемся в цикле пока не чекнем все литералы
+    /**
+     * Iterating for while cycle
+     */
     fun canIterate() = pickedCount < size
 
 
-    // Если в наших ответах два раза повторится переменная то надо бектрекнуться
+    /**
+     * Find duplicates in solution
+     * @return has duplicates or not
+     */
     fun duplicated(): Boolean {
         val literal = solutions[pickedCount]!!
         for (it in pickedCount - 1 downTo 0) {
@@ -60,7 +90,9 @@ class CDCLPicker(
     }
 
 
-    // Проверка на конфликт
+    /**
+     * Check next literal for conflict
+     */
     override fun hasConflict(): Pair<Boolean, Clause?> {
         // литерал который сейчас определили
         val literal = solutions[pickedCount - 1]!!
@@ -73,28 +105,25 @@ class CDCLPicker(
         return false to null
     }
 
-    // смотрим Clause, true если всё ок
-// false - есть конфликт
+    /**
+     * Analyze clause with picked literal
+     */
     private fun analyze(clause: Clause): Boolean {
         val assignments = valuesToMapVariable()
         var uncheckedCount = 0
         var lastLiteral: Literal? = null
         for (literal in clause.literals) {
-            // один литерал положителен и у нас всё круто
             if (assignments[literal.variable] == literal.isPositive) {
                 return true
             }
-            // смотрим сколько неопредленных литералов
             if (assignments[literal.variable] == null) {
                 uncheckedCount++
                 lastLiteral = literal
             }
         }
-        // если все определены, то это провал и есть конфликт
         if (uncheckedCount == 0) {
             return false
         }
-        // Если всего один литерал не определён, то можно просто исключить его по правилу чистой переменной
         if (uncheckedCount == 1 && lastLiteral != null) {
             addToValues(lastLiteral, clause)
         }
@@ -103,7 +132,9 @@ class CDCLPicker(
     }
 
 
-    // найти неопределённый литерал
+    /**
+     * Get next literal
+     */
     fun getNextLiteral() {
         if (pickedCount >= nextIndex) {
             val assignments = valuesToMapVariable()
@@ -121,19 +152,20 @@ class CDCLPicker(
     }
 
 
-    // без clause - взятый через getNextLiteral()
-// с clause - правилом чистой переменной
+    /**
+     * Add value for solution
+     * @param literal - literal to add
+     * @param parent - parrentClause
+     */
     private fun addToValues(literal: Literal, parent: Clause? = null) {
 
         solutions.subList(0, nextIndex).forEach {
             if (it == literal) {
-                return                    // если уже добавлено
+                return    // if exists
             }
         }
         solutions[nextIndex] = literal
         parentClauses[nextIndex] = parent
-        // выходим на следующий уровень, если установка литерала не следует из какого-либо Clause
-        // иначе остаёмся на том же уровне
         if (parent == null) {
             currentLevel++
         }
@@ -142,21 +174,21 @@ class CDCLPicker(
     }
 
 
-    // если без набора, то  это из-за того что взяли плохо и получили конфликт
-// Если набор есть, то из него у нас получился конфликт
-// true - всё ок, false- нельзя вернуться и ответа нету
+    /**
+     * Backtrack if picked literal has conflicts
+     * Backtrack goes for level of decision
+     */
     fun backtrack(conflictedClause: Clause? = null): Boolean {
 
-        // Ищем откуда будет искать место бектрека
+
         var backtrackingIndex = 0
         while (decisionLevels[backtrackingIndex] != decisionLevels[pickedCount - 1]) {
             backtrackingIndex++
         }
-        // мы в самом вверху импликационного графа и нам некуда подниматься
         if (decisionLevels[backtrackingIndex] == -1) {
             return false
         }
-        // Если мы бектрекаемся по конфликтующему набору
+
         if (conflictedClause != null) {
             var backtrackTo = backtrackingIndex - 1
 
@@ -175,11 +207,10 @@ class CDCLPicker(
             }
         }
 
-        // меняем знак переменной
         solutions[backtrackingIndex] = solutions[backtrackingIndex]!!.inversion
         nextIndex = backtrackingIndex + 1
         pickedCount = backtrackingIndex
-        // уменьшаем уровень решения
+
         decisionLevels[backtrackingIndex] = if (backtrackingIndex == 0) {
             -1
         } else {
@@ -191,17 +222,14 @@ class CDCLPicker(
     }
 
 
-    // Если у нас произошёл конфликт, то надо добавить к набору всех дизъюнт новый
-// он будет состоять из самого конфликтного набора и набора из которого последовало присвоение переменной
+    /**
+     * If we can conflict caused of pure elimination, we need to learn those clauses
+     */
     fun learn(conflictedClause: Clause?): Clause? {
         val literalParent = parentClauses[pickedCount - 1]
         val conflictedVariable = solutions[pickedCount - 1]!!.variable
         if (conflictedClause != null && literalParent != null) {
             val result = Clause()
-            // откуда последовало чистая переменная и набор с конфликтом
-            // если мы их соеденим то исключим установку по правилу !!!
-            // раз по правилу чистой переменной она оказалось неверной, значит среди переменных в выражении откуда
-            // последовало этого есть true и мы можем смерджить это
             (conflictedClause.literals + literalParent.literals)
                 .filter { it.variable != conflictedVariable }
                 .forEach {

@@ -11,8 +11,7 @@ import java.io.IOException
 import kotlin.math.abs
 
 /**
- * Класс который отвечает за чтение файлов в формате DIMACS (.cnf)
- * и перевод их в структуры данных представленных в проекте
+ * Class which parse DIMACS files (*.cnf)
  * @param input - путь к файлу
  */
 class Parser(
@@ -22,8 +21,9 @@ class Parser(
     constructor(file: File) : this(file.toString())
 
     /**
-     * Функция для возвращения формулы и количества переменных
-     * @return входной набор и сколько переменных в нём
+     * Function which returns cnf in "Formula format"
+     * @return Model and count of variables
+     * @see sat.wooftown.util.Model
      */
     fun parse(): Pair<Formula, Int> {
         val formula = Formula()
@@ -38,9 +38,9 @@ class Parser(
                 } else {
                     // ugly maybe reformat later TODO()
                     if (dnf > 0) {
-                        clause + +Variable(abs(dnf) - 1)
+                        clause + (+Variable(abs(dnf) - 1))
                     } else {
-                        clause + -Variable(abs(dnf) - 1)
+                        clause + (-Variable(abs(dnf) - 1))
                     }
                 }
             }

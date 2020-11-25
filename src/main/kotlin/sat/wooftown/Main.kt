@@ -4,17 +4,19 @@ import org.kohsuke.args4j.Argument
 import org.kohsuke.args4j.CmdLineException
 import org.kohsuke.args4j.CmdLineParser
 import org.kohsuke.args4j.Option
-import sat.wooftown.io.Parser
 import sat.wooftown.solver.SolverType
-import sat.wooftown.solver.cdcl.CDCLSolver
-import sat.wooftown.solver.dpll.NaiveSolver
-import sat.wooftown.util.Model
+import java.io.File
 
-
+/**
+ * Entry point of program
+ */
 fun main(args: Array<String>) {
     Main().launch(args)
 }
 
+/**
+ * Main class for jar file
+ */
 class Main {
     @Option(name = "-c", metaVar = "CDCL", required = false, usage = "Use CDCL solver")
     private var cdcl: Boolean = false
@@ -31,11 +33,12 @@ class Main {
 
     fun launch(args: Array<String>) {
         val parser = CmdLineParser(this)
+
         try {
             parser.parseArgument(*args)
         } catch (e: CmdLineException) {
             println(e.message)
-            println("java -jar tail.jar [-c |-d ] file0 file1 file2")
+            println("java -jar kalgs_sat.jar [-c |-d ] file0 file1 file2")
             parser.printUsage(System.out)
             return
         }
@@ -44,50 +47,40 @@ class Main {
             println("no input files")
         }
 
-        // reformat TODO()
-        if (!cdcl && !dpll) {
-            cdcl = true
-            dpll = true
+        val solversType = mutableListOf<SolverType>()
+
+
+        // switch бы сюда без break в конец каждого блока
+        if (dpll) {
+            solversType.add(SolverType.DPLL)
+        }
+        if (cdcl) {
+            solversType.add(SolverType.CDCL)
+        }
+        if (solversType.isEmpty()){
+            println("Choose type of solver")
+            parser.printUsage(System.out)
+            return
         }
 
-        for (files in inputFilesNames) {
-            println(files)
-            val parserCNF = Parser(files)
 
-
-            val formula = parserCNF.parse()
-            if (cdcl) {
-                val x = System.currentTimeMillis()
-                print("CDCL solver: ")
-                val solution = CDCLSolver(formula).solve()
-                println("${System.currentTimeMillis() - x} ms")
-                if (solution == null) {
-                    println("UNSAT")
-                } else {
+        for (file in inputFilesNames) {
+            println("Solving $file")
+            for (solver in solversType){
+                println("$solver:")
+                val result = solver.solve(File(file))
+                if (result != null){
                     println("SAT")
-                    if (printSolution) {
-                        print(solution)
+                    if (printSolution){
+                        println(result)
                     }
-                }
-            }
-            System.gc()
-            if (dpll) {
-                val x = System.currentTimeMillis()
-                print("DPLL solver:")
-                val solution = NaiveSolver(formula).solve()
-                println("${System.currentTimeMillis() - x}")
-                if (solution == null) {
-                    println("UNSAT")
                 } else {
-                    println("SAT")
-                    if (printSolution) {
-                        print(solution)
-                    }
+                    println("UNSAT")
                 }
             }
         }
+
     }
-
 
 
 }

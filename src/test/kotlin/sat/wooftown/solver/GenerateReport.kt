@@ -1,10 +1,6 @@
 package sat.wooftown.solver
 
 
-import sat.wooftown.io.Parser
-import sat.wooftown.solver.cdcl.CDCLSolver
-import sat.wooftown.solver.dpll.NaiveSolver
-import sat.wooftown.util.Model
 import java.io.File
 import java.util.*
 
@@ -30,10 +26,11 @@ class ReportGenerator {
             outputStream.newLine()
             for (solver in SolverType.values()) {
                 outputStream.write("$solver :")
-                val result = solve(file, solver)
-                outputStream.write("${result.first / 1000} s")
+                val startTime = System.currentTimeMillis()
+                val result = solver.solve(file)
+                outputStream.write("${ (startTime - System.currentTimeMillis()) / 1000} s")
                 outputStream.newLine()
-                if (result.second != null) {
+                if (result!= null) {
                     outputStream.write("SAT")
                 } else {
                     outputStream.write("UNSAT")
@@ -45,16 +42,6 @@ class ReportGenerator {
         }
 
         outputStream.close()
-    }
-
-    private fun solve(file: File, solver: SolverType): Pair<Long, Model?> {
-        val parser = Parser(file).parse()
-        val start = System.currentTimeMillis()
-        val solution = when (solver) {
-            SolverType.DPLL -> NaiveSolver(parser).solve()
-            SolverType.CDCL -> CDCLSolver(parser).solve()
-        }
-        return System.currentTimeMillis() - start to solution
     }
 
 

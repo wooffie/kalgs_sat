@@ -1,11 +1,8 @@
 package sat.wooftown.util
 
-/*
-Одна строчка переменных
-операторы для удобства работы
- */
+
 /**
- * Набор дизъюнкт состоящий из литералов
+ * Many of literals for line
  * @param literals - литералы на вход
  */
 class Clause(vararg literals: Literal) {
@@ -17,7 +14,7 @@ class Clause(vararg literals: Literal) {
     }
 
     /**
-     * Добавить литерал к набору дизъюнкт
+     * Add literal for clause
      */
     operator fun plus(other: Literal): Clause {
         literals.add(other)

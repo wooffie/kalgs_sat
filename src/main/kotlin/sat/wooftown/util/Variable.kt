@@ -1,14 +1,10 @@
 package sat.wooftown.util
 
 
-/*
-Переменная, определяется индексом
-операторы для удобства работы
- */
-
 /**
- * Переменная, хранит в себе целочисленный индекс, который берётся из .CNF
- * @param index - "название" переменной
+ * Variable which takes from .cnf file
+ * Index - name of variable (in DIMACS be like 1,2,3....)
+ * @param index - name
  */
 
 class Variable(
@@ -16,21 +12,22 @@ class Variable(
 ) {
 
     /**
-     * Возращает литерал данной переменной
-     * @param isPositive - стоит ли перед литералом минус (отрицание)
-     * @return literal - литерал
+     * Return Literal for Variable
+     * @see sat.wooftown.util.Literal
+     * @param isPositive
+     * @return literal - Literal
      */
     fun toLiteral(isPositive: Boolean) = Literal(index * 2 + if (isPositive) 0 else 1)
 
     /**
-     * Оператор для записи переменной как положительный литерал
-     * @return - литерал со знаком "+"
+     * Operator for creating positive Literal
+     * @return positive literal
      */
     operator fun unaryPlus() = Literal(index * 2)
 
     /**
-     * Оператор для записи переменной как отрицательный литерал
-     * @return - литерал со знаком "-"
+     * Operator for creating negative Literal
+     * @return negative literal
      */
     operator fun unaryMinus() = Literal(index * 2 + 1)
 

@@ -1,20 +1,16 @@
 package sat.wooftown.util
 
-/*
-Все наши дизъюнкьтвы вместе
-операторы для удобства работы
- */
-
 /**
- * Конюънкта дизъюнкт
- * @param clauses - наши наборы дизъюнки
+ * Lots of clauses
+ * @param clauses
  */
-// Хотел сделать Collection<Clause>
 class Formula(
     vararg clauses: Clause,
 ) {
 
-    // набор дизъюнкт
+    /**
+     * Set of clauses
+     */
     val clauses = mutableSetOf<Clause>()
 
     init {
@@ -22,7 +18,7 @@ class Formula(
     }
 
     /**
-     * Добавить к набору ещё один clause
+     * Add one more clause to Set
      */
     operator fun times(other: Clause): Formula {
         clauses.add(other)
