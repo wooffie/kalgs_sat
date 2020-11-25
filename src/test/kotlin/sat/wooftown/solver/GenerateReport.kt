@@ -18,7 +18,8 @@ class ReportGenerator {
     fun main() {
 
         val data = Date().toString().split(" ").subList(1, 4).joinToString("_").replace(":", "-")
-        val outputStream = File("report_${data}.txt").bufferedWriter()
+        val path = File(System.getProperty("user.dir")).toString() + "\\stats\\reports\\report_${data}.txt"
+        val outputStream = File(path).bufferedWriter()
         val filesForTest = File("src\\test\\resources").walkTopDown().drop(1)
 
         for (file in filesForTest) {
@@ -28,7 +29,7 @@ class ReportGenerator {
                 outputStream.write("$solver :")
                 val startTime = System.currentTimeMillis()
                 val result = solver.solve(file)
-                outputStream.write("${ (startTime - System.currentTimeMillis()) / 1000} s")
+                outputStream.write("${ (System.currentTimeMillis() - startTime ) / 1000} s")
                 outputStream.newLine()
                 if (result!= null) {
                     outputStream.write("SAT")
@@ -46,8 +47,8 @@ class ReportGenerator {
 
 
     fun deleteReports() {
-        val f = File(System.getProperty("user.dir"))
-        val match = f.listFiles() ?: return
+        val f = File(System.getProperty("user.dir")).toString() + "\\stats\\reports"
+        val match = File(f).listFiles() ?: return
         for (file in match.filterNotNull()) {
             val name = file.name
             if (name.startsWith("report") && name.endsWith(".txt")) {

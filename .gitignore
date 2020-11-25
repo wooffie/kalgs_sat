@@ -2,3 +2,4 @@
 /.gradle/
 /build/
 report_*
+/stats/benchmark/
