@@ -14,27 +14,21 @@ class CDCLSolver(formulaToNumber: Pair<Formula, Int>) : Solver {
 
         with(picker) {
             while (canIterate()) {
-
                 getNextLiteral()
 
                 if (duplicated()) {
-
                     if (!backtrack()) return null
 
-
                 } else {
-
                     val conflict = hasConflict()
+
                     if (conflict.first){
-
                         val learned = learn(conflict.second)
-
                         if (!backtrack(learned)) return null
 
                     }
                 }
             }
-
             return getSolution()
 
         }
