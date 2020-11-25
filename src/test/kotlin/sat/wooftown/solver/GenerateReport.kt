@@ -8,33 +8,32 @@ import sat.wooftown.util.Model
 import java.io.File
 import java.util.*
 
-fun main(){
-    ReportGenerator().main()
+fun main() {
+    println("Print \"delete\" for delete reports, or nothing to generate report")
+    when(readLine()){
+        "delete" -> ReportGenerator().deleteReports()
+        else ->  ReportGenerator().main()
+    }
 }
 
-fun deleteReports(){
-    ReportGenerator().deleteReports()
-    TODO()
-}
 
 class ReportGenerator {
 
-    fun main(){
+    fun main() {
 
-        val data = Date().toString().split(" ").subList(1,4).joinToString("_").replace(":","-")
+        val data = Date().toString().split(" ").subList(1, 4).joinToString("_").replace(":", "-")
         val outputStream = File("report_${data}.txt").bufferedWriter()
-
         val filesForTest = File("src\\test\\resources").walkTopDown().drop(1)
 
-        for (file in filesForTest){
+        for (file in filesForTest) {
             outputStream.write("Solving $file")
             outputStream.newLine()
-            for (solver in SolverType.values()){
+            for (solver in SolverType.values()) {
                 outputStream.write("$solver :")
-                val result = solve(file,solver)
-                outputStream.write("${result.first / 1000 } s")
+                val result = solve(file, solver)
+                outputStream.write("${result.first / 1000} s")
                 outputStream.newLine()
-                if (result.second != null){
+                if (result.second != null) {
                     outputStream.write("SAT")
                 } else {
                     outputStream.write("UNSAT")
@@ -48,14 +47,14 @@ class ReportGenerator {
         outputStream.close()
     }
 
-    enum class SolverType{
-        DPLL , CDCL
+    enum class SolverType {
+        DPLL, CDCL
     }
 
-    private fun solve(file: File,solver: SolverType) : Pair<Long, Model?> {
+    private fun solve(file: File, solver: SolverType): Pair<Long, Model?> {
         val parser = Parser(file).parse()
         val start = System.currentTimeMillis()
-        val solution = when(solver){
+        val solution = when (solver) {
             SolverType.DPLL -> NaiveSolver(parser).solve()
             SolverType.CDCL -> CDCLSolver(parser).solve()
         }
@@ -63,9 +62,15 @@ class ReportGenerator {
     }
 
 
-
-
-    fun deleteReports(){
+    fun deleteReports() {
+        val f = File(System.getProperty("user.dir"))
+        val match = f.listFiles() ?: return
+        for (file in match.filterNotNull()) {
+            val name = file.name
+            if (name.startsWith("report") && name.endsWith(".txt")) {
+                file.delete()
+            }
+        }
     }
 
 
