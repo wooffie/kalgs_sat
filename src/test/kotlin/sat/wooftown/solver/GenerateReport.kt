@@ -47,10 +47,6 @@ class ReportGenerator {
         outputStream.close()
     }
 
-    enum class SolverType {
-        DPLL, CDCL
-    }
-
     private fun solve(file: File, solver: SolverType): Pair<Long, Model?> {
         val parser = Parser(file).parse()
         val start = System.currentTimeMillis()

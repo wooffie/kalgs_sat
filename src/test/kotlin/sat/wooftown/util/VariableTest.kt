@@ -17,8 +17,8 @@ class VariableTest {
         assertEquals(variable1.toLiteral(true),+variable1)
         assertNotEquals(variable1,variable2)
         assertEquals(variable1,Variable(1))
-        println("String for Variable(1):")
-        println("${+variable1} and ${-variable1}")
+      /*  println("String for Variable(1):")
+        println("${+variable1} and ${-variable1}")*/
     }
 
 }

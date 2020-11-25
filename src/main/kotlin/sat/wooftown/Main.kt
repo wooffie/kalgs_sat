@@ -5,8 +5,10 @@ import org.kohsuke.args4j.CmdLineException
 import org.kohsuke.args4j.CmdLineParser
 import org.kohsuke.args4j.Option
 import sat.wooftown.io.Parser
+import sat.wooftown.solver.SolverType
 import sat.wooftown.solver.cdcl.CDCLSolver
 import sat.wooftown.solver.dpll.NaiveSolver
+import sat.wooftown.util.Model
 
 
 fun main(args: Array<String>) {
@@ -22,7 +24,6 @@ class Main {
 
     @Option(name = "-s", metaVar = "Solution", required = false, usage = "Print solution")
     private var printSolution: Boolean = false
-
 
     @Argument(required = false, metaVar = "InputFiles", usage = "Input files names")
     private var inputFilesNames = mutableListOf<String>()
@@ -43,6 +44,7 @@ class Main {
             println("no input files")
         }
 
+        // reformat TODO()
         if (!cdcl && !dpll) {
             cdcl = true
             dpll = true
@@ -51,12 +53,14 @@ class Main {
         for (files in inputFilesNames) {
             println(files)
             val parserCNF = Parser(files)
+
+
             val formula = parserCNF.parse()
             if (cdcl) {
                 val x = System.currentTimeMillis()
-                print("CDCL solver:")
+                print("CDCL solver: ")
                 val solution = CDCLSolver(formula).solve()
-                println("${System.currentTimeMillis() - x}")
+                println("${System.currentTimeMillis() - x} ms")
                 if (solution == null) {
                     println("UNSAT")
                 } else {
@@ -83,6 +87,7 @@ class Main {
             }
         }
     }
+
 
 
 }
