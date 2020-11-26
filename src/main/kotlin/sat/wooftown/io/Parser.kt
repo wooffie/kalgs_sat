@@ -49,6 +49,10 @@ class Parser(
         return formula to reader.numberOfVariables
     }
 
+    fun getStats(): Pair<Int, Int> {
+        return CNFReader(File(input)).numberOfVariables to CNFReader(File(input)).numberOfClauses
+    }
+
 
     /**
      * Класс-помощник, наследующий буфферного читателя файла
@@ -62,7 +66,7 @@ class Parser(
         ищем первую строчку выражения для определения сколько у нас строк и переиенных
          */
         init {
-            val properties = Regex("p cnf (\\d+) (\\d+)").find(readLine())
+            val properties = Regex("p cnf (\\d+)\\s+(\\d+)").find(readLine())
                 ?: throw IllegalArgumentException("Wrong format for .cnf file")
             numberOfVariables = properties.groupValues[1].toInt()
             numberOfClauses = properties.groupValues[2].toInt()

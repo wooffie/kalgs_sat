@@ -1,0 +1,3 @@
+hardware for benchmarks and reports:
+fx 8320e - 3.6 GHz
+ddr3 8gb - 1600 MHz

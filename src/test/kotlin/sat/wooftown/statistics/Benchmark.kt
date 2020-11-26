@@ -12,6 +12,7 @@ import java.util.*
 fun main() {
     val path = File(System.getProperty("user.dir")).toString() + "\\stats\\benchmark"
     val reportPath = File(System.getProperty("user.dir")).toString() + "\\stats\\benchmarkStats"
+
     fun generate(sat: String) {
         val listOfTypes = mutableListOf<Pair<BufferedWriter, SolverType>>()
         val nameOfReport = sat.split("\\").last()
@@ -32,8 +33,10 @@ fun main() {
                 val parser = Parser(file)
                 writer.write("${solver.solveWithTime(parser.parse())}")
                 writer.newLine()
+                System.gc()
             }
         }
+
         listOfTypes.map { it.first }.forEach { bufferedWriter ->
             bufferedWriter.close()
         }
@@ -44,15 +47,9 @@ fun main() {
     val satDirectories = File("$path\\sat").walkTopDown().drop(1).filter { it.isDirectory }.toList()
 
     val unsatDirectories = File("$path\\unsat").walkTopDown().drop(1).filter { it.isDirectory }.toList()
-
     val sortedList = (satDirectories + unsatDirectories).sortedBy { Regex("\\d+").find(it.toString())!!.value.toInt() }
-
     for (i in sortedList) {
         generate(i.toString())
     }
-    // todo() delete
-    val path1 = File(System.getProperty("user.dir")).toString() + "\\stats\\cnfs"
-    StatsGenerator(path1).generateReports()
-
 
 }
