@@ -36,7 +36,6 @@ class Parser(
                 if (dnf == 0) {
                     formula * clause
                 } else {
-                    // ugly maybe reformat later TODO()
                     if (dnf > 0) {
                         clause + (+Variable(abs(dnf) - 1))
                     } else {
